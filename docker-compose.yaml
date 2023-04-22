@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: thagkwar783  #set pw mysql
+    volumes:  #เอา file ทั้งหมดใน path database ไปไว้ใน docker-entrypoint-initdb.d ใน docker
+      - ./database:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"  #default = 3306 , 3307 = port in docker(เวลาคนข้างนอกมาติดต่อ db เราต้องใช้ port นี้) ตั้ง 3306 ทั้งสองอันได้ แต่ต้องปิด db ในเครื่องก่อน (search service->mysql80-> ปิด)
+
+  server:
+    build: ./server
+    ports:
+      - "4000:4000"  
+    depends_on:
+      - db   #รอให้ image db สร้างเสร็จก่อนแล้วค่อยสร้างของ server
+    environment:  #set env
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: thagkwar783
+      DB_NAME: inputlinear_re
+
+  app:
+    build: ./project
+    ports:
+      - "4040:3000"
+    depends_on:
+      - server
